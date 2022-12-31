@@ -30,12 +30,12 @@ class ChessBoard(tk.Frame):
         }
 
         self.images = {
-            "pawn_write": tk.PhotoImage(file='.\pieces\pw.png'),
-            "knight_write": tk.PhotoImage(file='.\pieces\knw.png'),
-            "bishop_write": tk.PhotoImage(file='.\pieces\\bw.png'),
-            "rook_write": tk.PhotoImage(file='.\pieces\\rw.png'),
-            "queen_write": tk.PhotoImage(file='.\pieces\qw.png'),
-            "king_write": tk.PhotoImage(file='.\pieces\kw.png'),
+            "pawn_white": tk.PhotoImage(file='.\pieces\pw.png'),
+            "knight_white": tk.PhotoImage(file='.\pieces\knw.png'),
+            "bishop_white": tk.PhotoImage(file='.\pieces\\bw.png'),
+            "rook_white": tk.PhotoImage(file='.\pieces\\rw.png'),
+            "queen_white": tk.PhotoImage(file='.\pieces\qw.png'),
+            "king_white": tk.PhotoImage(file='.\pieces\kw.png'),
             "pawn_black": tk.PhotoImage(file='.\pieces\pb.png'),
             "knight_black": tk.PhotoImage(file='.\pieces\knb.png'),
             "bishop_black": tk.PhotoImage(file='.\pieces\\bb.png'),
@@ -142,12 +142,27 @@ class ChessBoard(tk.Frame):
         name = self.board[int(start[1])-1][let2num[start[0]]-1]
         self.board[int(start[1])-1][let2num[start[0]]-1] = 0
         self.remove_piece(name)
+        pieceToRemove = None
 
         if self.board[int(end[1])-1][let2num[end[0]]-1]:
             pieceToRemove = self.board[int(end[1])-1][let2num[end[0]]-1]
             self.board[int(end[1])-1][let2num[end[0]]-1] = 0
             self.remove_piece(pieceToRemove)
-        self.addpiece(name, self.images[name[:-1]], int(end[1])-1, let2num[end[0]]-1)
+
+        if (name == "king_black1") and (pieceToRemove == "rook_black1"):
+           self.addpiece(name, self.images[name[:-1]], int(start[1])-1, let2num[start[0]]-3)
+           self.addpiece(pieceToRemove, self.images[pieceToRemove[:-1]], int(start[1])-1, let2num[start[0]]-2)
+        elif (name == "king_black1") and (pieceToRemove == "rook_black2"):
+           self.addpiece(name, self.images[name[:-1]], int(start[1])-1, let2num[start[0]]+1)
+           self.addpiece(pieceToRemove, self.images[pieceToRemove[:-1]], int(start[1])-1, let2num[start[0]])
+        elif (name == "king_white1") and (pieceToRemove == "rook_white1"):
+           self.addpiece(name, self.images[name[:-1]], int(start[1])-1, let2num[start[0]]-3)
+           self.addpiece(pieceToRemove, self.images[pieceToRemove[:-1]], int(start[1])-1, let2num[start[0]]-2)
+        elif (name == "king_white1") and (pieceToRemove == "rook_white2"):
+           self.addpiece(name, self.images[name[:-1]], int(start[1])-1, let2num[start[0]]+1)
+           self.addpiece(pieceToRemove, self.images[pieceToRemove[:-1]], int(start[1])-1, let2num[start[0]])
+        else:
+            self.addpiece(name, self.images[name[:-1]], int(end[1])-1, let2num[end[0]]-1)
         self.checkFinishGame()
 
     def refresh(self, event=None):
@@ -203,13 +218,13 @@ class ChessBoard(tk.Frame):
 
         # add black pieces
         for col in range(self.columns):
-            self.addpiece("pawn_write" + str(col), self.images["pawn_write"], row=1, column=col)
-        self.addpiece("rook_write1", self.images["rook_write"], row=0, column=0)
-        self.addpiece("knight_write1", self.images["knight_write"], row=0, column=1)
-        self.addpiece("bishop_write1", self.images["bishop_write"], row=0, column=2)
-        self.addpiece("queen_write1", self.images["queen_write"], row=0, column=3)
-        self.addpiece("king_write1", self.images["king_write"], row=0, column=4)
-        self.addpiece("bishop_write2", self.images["bishop_write"], row=0, column=5)
-        self.addpiece("knight_write2", self.images["knight_write"], row=0, column=6)
-        self.addpiece("rook_write2", self.images["rook_write"], row=0, column=7)
+            self.addpiece("pawn_white" + str(col), self.images["pawn_white"], row=1, column=col)
+        self.addpiece("rook_white1", self.images["rook_white"], row=0, column=0)
+        self.addpiece("knight_white1", self.images["knight_white"], row=0, column=1)
+        self.addpiece("bishop_white1", self.images["bishop_white"], row=0, column=2)
+        self.addpiece("queen_white1", self.images["queen_white"], row=0, column=3)
+        self.addpiece("king_white1", self.images["king_white"], row=0, column=4)
+        self.addpiece("bishop_white2", self.images["bishop_white"], row=0, column=5)
+        self.addpiece("knight_white2", self.images["knight_white"], row=0, column=6)
+        self.addpiece("rook_white2", self.images["rook_white"], row=0, column=7)
 
