@@ -2,6 +2,7 @@ import tkinter as tk
 import os
 import pprint
 import math
+import chess
 
 class ChessBoard(tk.Frame):
     def __init__(self, parent, logic_board, rows=8, columns=8, size=100, color1="white", color2="gray"):
@@ -75,9 +76,12 @@ class ChessBoard(tk.Frame):
         try:
             self.logic_board.push_uci(self.num2let[self.selected_square[1]]+str(self.selected_square[0] + 1)+self.num2let[col]+str(row + 1))
             self.canvas.delete("square_color")
-            self.movepiece(self.num2let[self.selected_square[1]]+str(self.selected_square[0] + 1), self.num2let[col]+str(row + 1))
+            self.movepiece(self.num2let[self.selected_square[1]]+str(self.selected_square[0] + 1), self.num2let[col]+str(row + 1), promote=False)
             self.selected_square = None
         except:
+            if chess.Move.from_uci(self.num2let[self.selected_square[1]]+str(self.selected_square[0] + 1)+self.num2let[col]+str(row + 1) + "q") in self.logic_board.legal_moves:
+                self.logic_board.push_uci(self.num2let[self.selected_square[1]]+str(self.selected_square[0] + 1)+self.num2let[col]+str(row + 1) + "q")
+                self.movepiece(self.num2let[self.selected_square[1]]+str(self.selected_square[0] + 1), self.num2let[col]+str(row + 1), promote=True)
             print("Move error - Retry")
             self.canvas.delete("square_color")
             self.selected_square = None
@@ -118,7 +122,7 @@ class ChessBoard(tk.Frame):
         # remove the piece from the pieces dictionary
         del self.pieces[name]
 
-    def movepiece(self, start, end):
+    def movepiece(self, start, end, promote=False):
 
         let2num = {
             "A":1,
@@ -162,6 +166,8 @@ class ChessBoard(tk.Frame):
            self.addpiece(name, self.images[name[:-1]], int(start[1])-1, let2num[start[0]]+1)
            self.addpiece(pieceToRemove, self.images[pieceToRemove[:-1]], int(start[1])-1, let2num[start[0]])
         else:
+            if promote:
+                name = "queen" + name[-7:]
             self.addpiece(name, self.images[name[:-1]], int(end[1])-1, let2num[end[0]]-1)
         self.checkFinishGame()
 
