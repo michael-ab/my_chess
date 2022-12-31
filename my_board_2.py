@@ -1,8 +1,10 @@
 import tkinter as tk
 import os
+import pprint
+import math
 
 class ChessBoard(tk.Frame):
-    def __init__(self, parent, rows=8, columns=8, size=100, color1="white", color2="gray"):
+    def __init__(self, parent, logic_board, rows=8, columns=8, size=100, color1="white", color2="gray"):
         '''size is the size of a square, in pixels'''
 
         self.rows = rows
@@ -11,10 +13,21 @@ class ChessBoard(tk.Frame):
         self.color1 = color1
         self.color2 = color2
         self.pieces = {}
-        self.board = [[0]*columns] * rows
-
+        self.board = [[0]* self.columns for i in range (self.rows)]
+        self.logic_board = logic_board
         canvas_width = columns * size
         canvas_height = rows * size
+
+        self.num2let = {
+            0: "a",
+            1: "b",
+            2: "c",
+            3: "d",
+            4: "e",
+            5: "f",
+            6: "g",
+            7: "h"
+        }
 
         self.images = {
             "pawn_write": tk.PhotoImage(file='.\pieces\pw.png'),
@@ -39,6 +52,52 @@ class ChessBoard(tk.Frame):
         # changes the window size
         self.canvas.bind("<Configure>", self.refresh)
 
+        # bind events to the canvas
+        self.canvas.bind("<ButtonPress-1>", self.on_button_press)
+
+        # data field for the selected square
+        self.selected_square = None
+
+    def on_button_press(self, event):
+        # highlight the clicked square
+        x, y = (event.x, event.y)
+        row, col = self.get_square_at_point(x, y)
+        self.select_square(row, col)
+
+    def select_square(self, row, col):
+        if not self.selected_square:
+            if self.board[row][col]:
+                self.draw_square(row, col, "yellow")
+                self.selected_square = [row, col]
+                self.canvas.tag_raise("piece")
+            return
+
+        try:
+            self.logic_board.push_uci(self.num2let[self.selected_square[1]]+str(self.selected_square[0] + 1)+self.num2let[col]+str(row + 1))
+            self.canvas.delete("square_color")
+            self.movepiece(self.num2let[self.selected_square[1]]+str(self.selected_square[0] + 1), self.num2let[col]+str(row + 1))
+            self.selected_square = None
+        except:
+            print("Move error - Retry")
+            self.canvas.delete("square_color")
+            self.selected_square = None
+
+    def get_square_at_point(self, x, y):
+        # calculate the row and column of the square at the given point
+        row = int(math.floor(y / self.size))
+        col = int(math.floor(x / self.size))
+        return row, col
+
+    def draw_square(self, row, col, color):
+            # calculate the coordinates of the top-left corner of the square
+            x0 = col * self.size
+            y0 = row * self.size
+            x1 = x0 + self.size
+            y1 = y0 + self.size
+
+            # draw the square
+            self.canvas.create_rectangle(x0, y0, x1, y1, fill=color, outline="black", tags="square_color")
+
     def addpiece(self, name, image, row=0, column=0):
         '''Add a piece to the playing board'''
         self.canvas.create_image(0,0, image=image, tags=(name, "piece"), anchor="c")
@@ -47,10 +106,10 @@ class ChessBoard(tk.Frame):
     def placepiece(self, name, row, column):
         '''Place a piece at the given row/column'''
         self.pieces[name] = (row, column)
+        self.board[row][column] = name
         x0 = (column * self.size) + int(self.size/2)
         y0 = (row * self.size) + int(self.size/2)
         self.canvas.coords(name, x0, y0)
-        self.board[row][column] = name
 
     def remove_piece(self, name):
         # remove the piece from the board
@@ -60,6 +119,7 @@ class ChessBoard(tk.Frame):
         del self.pieces[name]
 
     def movepiece(self, start, end):
+
         let2num = {
             "A":1,
             "a":1,
@@ -79,16 +139,23 @@ class ChessBoard(tk.Frame):
             "h":8,
         }
 
-        name = self.board[let2num[start[0]]-1][int(start[1])-1]
-        self.board[let2num[start[0]]-1][int(start[1])-1] = 0
+        name = self.board[int(start[1])-1][let2num[start[0]]-1]
+        self.board[int(start[1])-1][let2num[start[0]]-1] = 0
         self.remove_piece(name)
-        self.addpiece(name, self.images[name[:-1]], let2num[end[0]]-1, int(end[1])-1)
 
-    def refresh(self, event):
+        if self.board[int(end[1])-1][let2num[end[0]]-1]:
+            pieceToRemove = self.board[int(end[1])-1][let2num[end[0]]-1]
+            self.board[int(end[1])-1][let2num[end[0]]-1] = 0
+            self.remove_piece(pieceToRemove)
+        self.addpiece(name, self.images[name[:-1]], int(end[1])-1, let2num[end[0]]-1)
+        self.checkFinishGame()
+
+    def refresh(self, event=None):
         '''Redraw the board, possibly in response to window being resized'''
-        xsize = int((event.width-1) / self.columns)
-        ysize = int((event.height-1) / self.rows)
-        self.size = min(xsize, ysize)
+        if event:
+            xsize = int((event.width-1) / self.columns)
+            ysize = int((event.height-1) / self.rows)
+            self.size = min(xsize, ysize)
         self.canvas.delete("square")
         color = self.color2
         for row in range(self.rows):
@@ -106,13 +173,25 @@ class ChessBoard(tk.Frame):
         self.canvas.tag_raise("piece")
         self.canvas.tag_lower("square")
 
+    def show_winner(self, color):
+            # create a label displaying the winner
+            label = tk.Label(self, text=color, font=("Arial", 24))
+            label.pack(side="top", fill="both", expand="true", padx=4, pady=4)
+
+    def checkFinishGame(self):
+        if self.logic_board.is_checkmate():
+            if self.logic_board.outcome().winner == 1:
+                self.show_winner("White wins!")
+            if self.logic_board.outcome().winner == 0:
+                self.show_winner("Black wins")
+            if self.logic_board.outcome().winner == None:
+                self.show_winner("Draw")
+
     def add_all_pieces(self):
-        # create a dictionary mapping piece names to images
-
-
         # add white pieces
         for col in range(self.columns):
             self.addpiece("pawn_black" + str(col), self.images["pawn_black"], row=6, column=col)
+
         self.addpiece("rook_black1", self.images["rook_black"], row=7, column=0)
         self.addpiece("knight_black1", self.images["knight_black"], row=7, column=1)
         self.addpiece("bishop_black1", self.images["bishop_black"], row=7, column=2)
@@ -134,13 +213,3 @@ class ChessBoard(tk.Frame):
         self.addpiece("knight_write2", self.images["knight_write"], row=0, column=6)
         self.addpiece("rook_write2", self.images["rook_write"], row=0, column=7)
 
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    board = ChessBoard(root)
-    board.pack(side="top", fill="both", expand="true", padx=4, pady=4)
-
-    board.add_all_pieces()
-
-    # run the Tk event loop
-    root.mainloop()
