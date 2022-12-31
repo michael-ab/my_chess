@@ -130,10 +130,10 @@ class ChessBoard(QMainWindow):
             frame.setStyleSheet('background-color: lightgray')
         self.grid_layout.addWidget(frame, row, col)
 
-        # Add the chess piece label on top of the frame
-        label = ChessPieceLabel(pixmap)
-        frame.setLayout(QGridLayout())
-        frame.layout().addWidget(label, 0, 0)
+        # # Add the chess piece label on top of the frame
+        # label = ChessPieceLabel(pixmap)
+        # frame.setLayout(QGridLayout())
+        # frame.layout().addWidget(label, 0, 0)
 
     def move_piece(self, start, end):
 
