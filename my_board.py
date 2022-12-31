@@ -1,4 +1,3 @@
-import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QFrame, QLabel
 from PyQt5.QtGui import QIcon, QPixmap, QDrag
 from PyQt5.QtCore import Qt, QMimeData, QPoint
@@ -136,23 +135,34 @@ class ChessBoard(QMainWindow):
         frame.setLayout(QGridLayout())
         frame.layout().addWidget(label, 0, 0)
 
-    def move_piece(self, start_row, start_col, end_row, end_col):
+    def move_piece(self, start, end):
+
+        let2num = {
+            "A":1,
+            "a":1,
+            "B":2,
+            "b":2,
+            "C":3,
+            "c":3,
+            "D":4,
+            "d":4,
+            "E":5,
+            "e":5,
+            "F":6,
+            "f":6,
+            "G":7,
+            "g":7,
+            "H":8,
+            "h":8,
+        }
         # Get the widget at the starting position
-        start_widget = self.grid_layout.itemAtPosition(start_row, start_col).widget()
+        start_widget = self.grid_layout.itemAtPosition(let2num[start[0]]-1, int(start[1])-1).widget()
 
         # Remove the widget at the starting position
         self.grid_layout.removeWidget(start_widget)
 
         # Add the widget at the end position
-        self.grid_layout.addWidget(start_widget, end_row, end_col)
+        self.grid_layout.addWidget(start_widget, let2num[end[0]]-1, int(end[1])-1)
 
     def showBoard(self):
         self.show()
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    chess_board = ChessBoard()
-    chess_board.move_piece(6, 4, 4, 4)
-    chess_board.showBoard()
-
-    sys.exit(app.exec_())
