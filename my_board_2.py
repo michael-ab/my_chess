@@ -73,15 +73,22 @@ class ChessBoard(tk.Frame):
                 self.canvas.tag_raise("piece")
             return
 
-        try:
-            self.logic_board.push_uci(self.num2let[self.selected_square[1]]+str(self.selected_square[0] + 1)+self.num2let[col]+str(row + 1))
-            self.canvas.delete("square_color")
-            self.movepiece(self.num2let[self.selected_square[1]]+str(self.selected_square[0] + 1), self.num2let[col]+str(row + 1), promote=False)
-            self.selected_square = None
-        except:
-            if chess.Move.from_uci(self.num2let[self.selected_square[1]]+str(self.selected_square[0] + 1)+self.num2let[col]+str(row + 1) + "q") in self.logic_board.legal_moves:
-                self.logic_board.push_uci(self.num2let[self.selected_square[1]]+str(self.selected_square[0] + 1)+self.num2let[col]+str(row + 1) + "q")
-                self.movepiece(self.num2let[self.selected_square[1]]+str(self.selected_square[0] + 1), self.num2let[col]+str(row + 1), promote=True)
+        coord = self.num2let[self.selected_square[1]]+str(self.selected_square[0] + 1)+self.num2let[col]+str(row + 1)
+        promote = False
+        moveFailed = True
+        for i in range(2):
+            try:
+                self.logic_board.push_uci(coord)
+                self.canvas.delete("square_color")
+                self.movepiece(self.num2let[self.selected_square[1]]+str(self.selected_square[0] + 1), self.num2let[col]+str(row + 1), promote=promote)
+                self.selected_square = None
+                moveFailed = False
+                break
+            except:
+                # Try to promote
+                coord += "q"
+                promote = True
+        if moveFailed:
             print("Move error - Retry")
             self.canvas.delete("square_color")
             self.selected_square = None
