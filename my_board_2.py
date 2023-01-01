@@ -5,7 +5,7 @@ import math
 import chess
 
 class ChessBoard(tk.Frame):
-    def __init__(self, parent, logic_board, rows=8, columns=8, size=100, color1="white", color2="gray"):
+    def __init__(self, parent, logic_board, rows=8, columns=8, size=70, color1="white", color2="gray"):
         '''size is the size of a square, in pixels'''
 
         self.rows = rows
