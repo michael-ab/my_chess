@@ -5,6 +5,6 @@ To start a game, run the "chess.py" file.
 
 The game is played using standard chess rules and the chessboard displays the current state of the game.
 
-![Screenshot of Python Chess Game](screenshot.png)
+![Screenshot of Python Chess Game](Screenshot.png)
 
 Have fun!
